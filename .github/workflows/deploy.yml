@@ -31,52 +31,7 @@ jobs:
           cd email_template
           zip -r ../builds/email_template.zip .
 
-      - name: Delete existing IAM roles and policies if they exist
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-        run: |
-          set -e
-
-          if aws iam get-role --role-name lambda1-role >/dev/null 2>&1; then
-            echo "Deleting lambda1-role..."
-            for policy_arn in $(aws iam list-attached-role-policies --role-name lambda1-role --query 'AttachedPolicies[].PolicyArn' --output text); do
-              aws iam detach-role-policy --role-name lambda1-role --policy-arn "$policy_arn"
-            done
-            aws iam delete-role --role-name lambda1-role
-          fi
-
-          if aws iam get-role --role-name lambda2-role >/dev/null 2>&1; then
-            echo "Deleting lambda2-role..."
-            for policy_arn in $(aws iam list-attached-role-policies --role-name lambda2-role --query 'AttachedPolicies[].PolicyArn' --output text); do
-              aws iam detach-role-policy --role-name lambda2-role --policy-arn "$policy_arn"
-            done
-            aws iam delete-role --role-name lambda2-role
-          fi
-
-          policy_arn=$(aws iam list-policies --scope Local --query "Policies[?PolicyName=='LambdaEmailGetTemplate'].Arn" --output text)
-          if [ -n "$policy_arn" ]; then
-            echo "Deleting policy LambdaEmailGetTemplate..."
-            for role_name in $(aws iam list-entities-for-policy --policy-arn "$policy_arn" --query 'PolicyRoles[].RoleName' --output text); do
-              aws iam detach-role-policy --role-name "$role_name" --policy-arn "$policy_arn"
-            done
-            aws iam delete-policy --policy-arn "$policy_arn"
-          fi
-
-      - name: Delete existing Lambda functions if they exist
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-        run: |
-          set -e
-          for function in secret_lambda email_template python_lib_lambda; do
-            if aws lambda get-function --function-name $function >/dev/null 2>&1; then
-              echo "Deleting Lambda function $function..."
-              aws lambda delete-function --function-name $function
-            fi
-          done
+      # ... your existing delete IAM roles, policies, lambda functions steps ...
 
       - name: Delete existing lambda3-role IAM role if exists
         env:
@@ -92,6 +47,13 @@ jobs:
             done
             aws iam delete-role --role-name lambda3-role
           fi
+
+      - name: Import existing lambda3-role-alt IAM role to Terraform state
+        run: terraform import aws_iam_role.lambda3_role_alt lambda3-role-alt || echo "Role already imported or import failed, continuing..."
+        working-directory: ${{ github.workspace }}/terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
