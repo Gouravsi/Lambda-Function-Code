@@ -1,15 +1,29 @@
+import boto3
 import json
+import os
 
 def lambda_handler(event, context):
-    print("Event received:", event)  # Logs the input event for debugging
+    method = event.get("httpMethod", "")
+    if method != "GET":
+        return {
+            "statusCode": 405,
+            "body": json.dumps({"error": "Method not allowed"})
+        }
 
-    response = {
+    secret_name = os.environ.get("SECRET_NAME")
+    region = os.environ.get("AWS_REGION", "us-east-1")
+    client = boto3.client("secretsmanager", region_name=region)
+
+    try:
+        response = client.get_secret_value(SecretId=secret_name)
+        secret_value = response.get("SecretString", "")
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
+
+    return {
         "statusCode": 200,
-        "headers": {
-            "Content-Type": "application/json"
-        },
-        "body": json.dumps({
-            "message": "Hello from email_template Lambda!"
-        })
+        "body": json.dumps({"secret": secret_value})
     }
-    return response
