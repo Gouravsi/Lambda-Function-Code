@@ -13,9 +13,9 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "bucket-for-lambda-test-12"
-    key    = "lambda-api/terraform.tfstate"
-    region = "us-east-1"
+    bucket  = "bucket-for-lambda-test-12"
+    key     = "lambda-api/terraform.tfstate"
+    region  = "us-east-1"
     encrypt = true
   }
 }
@@ -37,6 +37,12 @@ resource "aws_iam_role" "lambda_exec" {
       Sid    = ""
     }]
   })
+
+  lifecycle {
+    ignore_changes = [
+      name, # ignore name changes so it won't error if the role exists with this name
+    ]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
@@ -51,13 +57,13 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_lambda_function" "my_lambda" {
-  function_name = "my_lambda"
-  filename      = data.archive_file.lambda_zip.output_path
+  function_name    = "my_lambda"
+  filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  handler       = "main.lambda_handler"
-  runtime       = "python3.13"
-  role          = aws_iam_role.lambda_exec.arn
-  timeout       = 10
+  handler          = "main.lambda_handler"
+  runtime          = "python3.13"
+  role             = aws_iam_role.lambda_exec.arn
+  timeout          = 10
 
   depends_on = [aws_iam_role_policy_attachment.lambda_logs]
 }
