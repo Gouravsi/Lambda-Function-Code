@@ -18,11 +18,14 @@ jobs:
       with:
         python-version: '3.9'
 
+    - name: Create builds directory
+      run: mkdir -p builds
+
     - name: Zip secret_lambda
       run: |
         cd secret_lambda
         zip -r ../builds/secret_lambda.zip .
-    
+
     - name: Zip email_template
       run: |
         cd email_template
