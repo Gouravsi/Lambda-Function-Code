@@ -1,7 +1,20 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.0"
+    }
+    archive = {
+      source  = "hashicorp/archive"
+      version = ">= 2.2.0"
+    }
+  }
+
+  required_version = ">= 1.3.0"
+}
+
 provider "aws" {
-  region     = "us-east-1"
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
+  region = "us-east-1"
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -38,6 +51,8 @@ resource "aws_lambda_function" "my_lambda" {
   runtime       = "python3.13"
   role          = aws_iam_role.lambda_exec.arn
   timeout       = 10
+
+  depends_on = [aws_iam_role_policy_attachment.lambda_logs]
 }
 
 resource "aws_apigatewayv2_api" "api" {
@@ -46,10 +61,10 @@ resource "aws_apigatewayv2_api" "api" {
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
-  api_id           = aws_apigatewayv2_api.api.id
-  integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.my_lambda.invoke_arn
-  integration_method = "POST"
+  api_id                 = aws_apigatewayv2_api.api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.my_lambda.invoke_arn
+  integration_method     = "POST"
   payload_format_version = "2.0"
 }
 
@@ -71,4 +86,8 @@ resource "aws_lambda_permission" "apigw" {
   function_name = aws_lambda_function.my_lambda.arn
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
+}
+
+output "api_gateway_url" {
+  value = aws_apigatewayv2_api.api.api_endpoint
 }
