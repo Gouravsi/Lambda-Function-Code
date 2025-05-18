@@ -1,10 +1,15 @@
-import boto3
 import json
 
 def lambda_handler(event, context):
-    client = boto3.client("ses", region_name="us-east-1")
-    response = client.get_template(TemplateName="YourTemplateName")
-    return {
+    print("Event received:", event)  # Logs the input event for debugging
+
+    response = {
         "statusCode": 200,
-        "body": json.dumps(response)
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": json.dumps({
+            "message": "Hello from email_template Lambda!"
+        })
     }
+    return response
