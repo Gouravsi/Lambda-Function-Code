@@ -78,6 +78,21 @@ jobs:
             fi
           done
 
+      - name: Delete existing lambda3-role IAM role if exists
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          set -e
+          if aws iam get-role --role-name lambda3-role >/dev/null 2>&1; then
+            echo "Deleting lambda3-role..."
+            for policy_arn in $(aws iam list-attached-role-policies --role-name lambda3-role --query 'AttachedPolicies[].PolicyArn' --output text); do
+              aws iam detach-role-policy --role-name lambda3-role --policy-arn "$policy_arn"
+            done
+            aws iam delete-role --role-name lambda3-role
+          fi
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
