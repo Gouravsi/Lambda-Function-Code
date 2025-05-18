@@ -1,5 +1,5 @@
-resource "aws_iam_role" "lambda3_role" {
-  name = "lambda3-role"
+resource "aws_iam_role" "lambda3_role_alt" {
+  name = "lambda3-role-alt"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -12,9 +12,4 @@ resource "aws_iam_role" "lambda3_role" {
       Sid       = ""
     }]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda3_basic_execution_attachment" {
-  role       = aws_iam_role.lambda3_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
