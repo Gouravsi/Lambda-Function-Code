@@ -1,5 +1,5 @@
 resource "aws_api_gateway_rest_api" "api" {
-  name        = "updated API"
+  name        = "API"
   description = "API for Lambda functions"
 }
 
