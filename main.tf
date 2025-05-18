@@ -1,4 +1,6 @@
 terraform {
+  required_version = ">= 1.3.0"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -10,7 +12,12 @@ terraform {
     }
   }
 
-  required_version = ">= 1.3.0"
+  backend "s3" {
+    bucket = "bucket-for-lambda-test-12"
+    key    = "lambda-api/terraform.tfstate"
+    region = "us-east-1"
+    encrypt = true
+  }
 }
 
 provider "aws" {
@@ -89,5 +96,6 @@ resource "aws_lambda_permission" "apigw" {
 }
 
 output "api_gateway_url" {
-  value = aws_apigatewayv2_api.api.api_endpoint
+  description = "Public URL to access the Lambda function via API Gateway"
+  value       = aws_apigatewayv2_api.api.api_endpoint
 }
