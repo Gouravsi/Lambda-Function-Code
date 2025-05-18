@@ -35,11 +35,10 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1   # replace with your region
+          AWS_REGION: us-east-1
         run: |
           set -e
 
-          # Delete lambda1-role if exists
           if aws iam get-role --role-name lambda1-role >/dev/null 2>&1; then
             echo "Deleting lambda1-role..."
             for policy_arn in $(aws iam list-attached-role-policies --role-name lambda1-role --query 'AttachedPolicies[].PolicyArn' --output text); do
@@ -48,7 +47,6 @@ jobs:
             aws iam delete-role --role-name lambda1-role
           fi
 
-          # Delete lambda2-role if exists
           if aws iam get-role --role-name lambda2-role >/dev/null 2>&1; then
             echo "Deleting lambda2-role..."
             for policy_arn in $(aws iam list-attached-role-policies --role-name lambda2-role --query 'AttachedPolicies[].PolicyArn' --output text); do
@@ -57,7 +55,6 @@ jobs:
             aws iam delete-role --role-name lambda2-role
           fi
 
-          # Delete the custom policy LambdaEmailGetTemplate if exists
           policy_arn=$(aws iam list-policies --scope Local --query "Policies[?PolicyName=='LambdaEmailGetTemplate'].Arn" --output text)
           if [ -n "$policy_arn" ]; then
             echo "Deleting policy LambdaEmailGetTemplate..."
@@ -66,6 +63,20 @@ jobs:
             done
             aws iam delete-policy --policy-arn "$policy_arn"
           fi
+
+      - name: Delete existing Lambda functions if they exist
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          set -e
+          for function in secret_lambda email_template; do
+            if aws lambda get-function --function-name $function >/dev/null 2>&1; then
+              echo "Deleting Lambda function $function..."
+              aws lambda delete-function --function-name $function
+            fi
+          done
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
