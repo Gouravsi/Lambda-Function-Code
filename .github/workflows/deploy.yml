@@ -71,7 +71,7 @@ jobs:
           AWS_REGION: us-east-1
         run: |
           set -e
-          for function in secret_lambda email_template; do
+          for function in secret_lambda email_template python_lib_lambda; do
             if aws lambda get-function --function-name $function >/dev/null 2>&1; then
               echo "Deleting Lambda function $function..."
               aws lambda delete-function --function-name $function

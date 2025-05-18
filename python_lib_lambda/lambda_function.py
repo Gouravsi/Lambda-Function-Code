@@ -1,10 +1,14 @@
 import json
-import some_library  # Replace with the actual library name
 
 def lambda_handler(event, context):
-    # Example logic using the third-party library
-    result = some_library.do_something()
-    return {
-        "statusCode": 200,
-        "body": json.dumps({"result": result})
-    }
+    try:
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"message": "ok"})
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
+
