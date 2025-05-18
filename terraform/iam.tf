@@ -57,3 +57,18 @@ resource "aws_iam_role_policy_attachment" "lambda2_ses_template" {
   role       = aws_iam_role.lambda2_role.name
   policy_arn = aws_iam_policy.ses_get_template.arn
 }
+
+resource "aws_lambda_function" "python_lib_lambda" {
+  function_name = "python_lib_lambda"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.9"
+  role          = aws_iam_role.lambda3_role.arn
+
+  filename         = "${path.module}/../builds/python_lib_lambda.zip"
+  source_code_hash = filebase64sha256("${path.module}/../builds/python_lib_lambda.zip")
+  environment {
+    variables = {
+      # add env vars if needed
+    }
+  }
+}
