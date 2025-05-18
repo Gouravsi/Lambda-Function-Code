@@ -31,7 +31,7 @@ jobs:
           cd email_template
           zip -r ../builds/email_template.zip .
 
-      # ... your existing delete IAM roles, policies, lambda functions steps ...
+      # Your existing delete IAM roles, policies, lambda functions steps...
 
       - name: Delete existing lambda3-role IAM role if exists
         env:
@@ -48,8 +48,22 @@ jobs:
             aws iam delete-role --role-name lambda3-role
           fi
 
+      - name: Import lambda1-role
+        run: terraform import aws_iam_role.lambda1_role lambda1-role || echo "lambda1-role already imported or failed"
+        working-directory: ${{ github.workspace }}/terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Import lambda2-role
+        run: terraform import aws_iam_role.lambda2_role lambda2-role || echo "lambda2-role already imported or failed"
+        working-directory: ${{ github.workspace }}/terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Import existing lambda3-role-alt IAM role to Terraform state
-        run: terraform import aws_iam_role.lambda3_role_alt lambda3-role-alt || echo "Role already imported or import failed, continuing..."
+        run: terraform import aws_iam_role.lambda3_role_alt lambda3-role-alt || echo "lambda3-role-alt already imported or import failed, continuing..."
         working-directory: ${{ github.workspace }}/terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
