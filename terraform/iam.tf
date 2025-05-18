@@ -9,12 +9,12 @@ resource "aws_iam_role" "lambda3_role" {
         Service = "lambda.amazonaws.com"
       },
       Effect = "Allow",
-      Sid    = ""
+      Sid       = ""
     }]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda3_basic_execution" {
+resource "aws_iam_role_policy_attachment" "lambda3_basic_execution_attachment" {
   role       = aws_iam_role.lambda3_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
